@@ -1,0 +1,130 @@
+Function GRN() as variant 'generate random numbers
+Dim pi as double, a as double, c as double
+Dim n as long, n_max as long
+Dim I() as double
+Dim X() as double
+
+pi = 4*Atn(1)
+a = 7^5
+c = 2^31 - 1
+n_max = 600000
+
+ReDim I(n_max)
+ReDim X(n_max)
+
+I(0) = 4321 'seed
+For n = 1 to n_max 
+  I(n) = c* ( a*I(n-1)/c - Int(a*I(n-1)/c))
+Next n
+
+For n = 1 to n_max -1 Step 2
+  'Box-Muller Method x() is IID N(0，1）
+  X(n) = sqrt(-2 *Log(I(n)/c))*Cos(2*pi*(I(n+1)/c))
+  X(n+1) = sqrt(-2 *Log(I(n)/c))*Sin(2*Pi*(I(n+1)/c))
+Next n
+
+Open ''C:\Document\montecarlo\random_seed.txt'' For Output As #1
+For n =1 to n_max
+  Write #1, X(n)
+Next n
+Close #1
+End Function
+
+
+Function MonteCarlo(sigma As Double, K as Double, m_ave as Integer, q as Integer, r as Double, S_0 As Double, T as Double) As Variant
+
+Dim n, n_path, m As Long
+Dim h as Double
+Dim Z() as Double, S() as Double, AV() as Double
+Dim asian() as Double, european() as Double
+Dim V as Double, W as Double
+Dim sdA as Double, sdE as double
+dim output() as double
+
+n_path = 5000 '# paths in MC
+h = T/m_ave 'time between successive averaging times
+
+ReDim Z(n_path, m_ave)
+ReDim S(n_path, m_ave)
+ReDim AV(n_path)
+ReDim asian(n_path)
+ReDim european(n_path)
+ReDim output(3)
+
+Open ''C:\Document\montecarlo\random_seed.txt'' For Input As #2
+For m = 1 to m_ave
+  For n = 1 to n_path
+    Input #2, Z(n,m)
+  next n
+next m
+Close #2
+
+'stock price simulation
+For n =1 to n_path
+  S(n,0)=S_0
+  AV(n) = 0
+  For m = 1 to m_ave
+    S(n, m) = S(n, m-1) * exp((r-q-sigma^2/2)*h + sigma*sqrt(h)*Z(n,m))
+    AV(n) = AV(n) + S(n,m)
+  next m
+AV(n) = AV(n) / m_ave
+Next n
+
+'option price simulation
+For n = 1 to n_path
+  asian(n) = Exp(-r*T) *MaxFunc(AV(n) - K, 0)
+  european(n) = Exp(-r*T)*MaxFunc(S(n, m_ave)-K, 0)
+Next n
+
+'Monte carlo
+V= 0
+W=0
+For n = 1 to n_path
+  V= asian(n) +V
+  W= european(n) +W
+next n
+
+V = V/n_path
+W = W/n_path
+
+sdA= 0
+sdE=0
+For n =1 to n_path
+  sdA = (asian(n) -V)^2 +sdA
+  sdE = (european(n)-W)^2 +sdE
+next n
+
+sdA = sqrt(sdA / (n_path -1))
+sdE = sqrt(sdE / (n_path -1))
+
+output(0) = V
+output(1) = sdA/sqrt(n_path) 'standard deviation of estimator
+output(2) = W
+output(3) = sdE/sqrt(n_path)
+
+MonteCarlo = output()
+
+End Function
+
+
+Function MaxFunc(number1 as double, number2 as double)
+if number1>number2 then
+  MaxFunc = number1
+elseif number1<=number2 then
+  MaxFunc = number2
+ else stop
+end if
+End Function
+
+
+Function BlackScholes(sigma, K, q, r, Su, T, u) as Double
+Dim d1 as double
+Dim d2 as double
+
+d1 = (Log(Su/K) + (r-q+sigma^2/2)*(T-u))/(sigma *sqrt(T-u))
+d2= d1 - sigma*sqrt(T-u)
+
+BlackScholes = Su*WorksheetFunction.NormSDist(d1) - Exp(-r*(T-u))*K*WorkSheetFunction.NormSDist(d2)
+
+End Function
+
