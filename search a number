@@ -1,0 +1,68 @@
+Sub RngFind()
+    Dim StrFind As String
+    Dim rng As Range
+    StrFind = InputBox("Input the number you want to search:")
+    If Trim(StrFind) <> "" Then 
+        With Sheet1.Range("A:A")
+            Set rng = .Find(What:=StrFind, _
+                            After:=.Cells(.Cells.Count), _
+                            LookIn:=xlValues, _
+                            LookAt:=xlWhole, _
+                            SearchOrder:=xlByRows, _
+                            SearchDirection:=xlNext, _
+                            MatchCase:=False)
+            'Find defines how we search the list
+            If Not rng Is Nothing Then
+                Application.Goto rng, True
+            Else
+                MsgBox "Not found"
+            End If
+        End With
+    End If
+End Sub
+
+
+
+Sub RngFindNext()
+    Dim StrFind As String
+    Dim rng As Range
+    Dim FindAddress As String
+    StrFind = InputBox("Input the next")
+    If Trim(StrFind) <> "" Then
+        With Sheet1.Range("A:A")
+            .Interior.ColorIndex = 0
+            Set rng = .Find(What:=StrFind, _
+                            After:=.Cells(.Cells.Count), _
+                            LookIn:=xlValues, _
+                            LookAt:=xlWhole, _
+                            SearchOrder:=xlByRows, _
+                            SearchDirection:=xlNext, _
+                            MatchCase:=False)
+            If Not rng Is Nothing Then
+                FindAddress = rng.Address
+                Do
+                    rng.Interior.ColorIndex = 6
+                    Set rng = .FindNext(rng)
+                Loop While Not rng Is Nothing _
+                    And rng.Address <> FindAddress
+            End If
+        End With
+    End If
+End Sub
+
+
+
+Sub RngLike()
+    Dim rng As Range
+    Dim a As Integer
+    a = 1
+    With Sheet2
+        .Range("A:A").ClearContents
+        For Each rng In .Range("B1:E1000")
+            If rng.Text Like "*a*" Then
+                .Range("A" & a) = rng.Text
+                a = a + 1
+            End If
+        Next
+    End With
+End Sub
