@@ -1,0 +1,16 @@
+Function LastCell(ByRef WhichSheet As Worksheet) as Range
+Dim lastrow, lastcol as long
+Dim TempRange As Range
+
+lastrow = 1
+lastcol =1
+
+Set TempRange as WhichSheet.Cells.Find("*",, xlFormulas, xlPart, xlByRows, xlPrevious)
+If Not TempRange Is Nothing Then lastrow = TempRange.Row
+
+Set TempRange = WhichSheet.Cells.Find("*",, xlFormulas, xlPart, xlByColumns, xlPrevious)
+If Not TempRange Is Nothing Then lastcol = TempRange.Column
+
+Set LastCellInSheet = WhichSheet.Cells.Item(lastrow, lastcol)
+
+End Function
