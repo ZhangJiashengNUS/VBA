@@ -1,0 +1,254 @@
+*****************1*****************
+'Combine sheets with similar structure
+'see tutorial 12, question 2
+
+Sub combinesheets()
+Dim i As Integer, wbk As Workbook
+Set wbk = Workbooks.Open(ThisWorkbook.Path & "\A.xls")
+With ThisWorkbook.Sheets("2nd")
+For i = 1 To wbk.Sheets.Count
+    If i = 1 Then
+       wbk.Sheets(i).UsedRange.Copy .Range("A1")
+    Else
+       wbk.Sheets(i).UsedRange.Offset(1, 0).Copy .Range("A" & .[A65536].End(xlUp).Row + 1)
+    End If
+Next i
+wbk.Close True
+End With
+End Sub
+
+*****************2*****************
+'merge the cells with same value
+Sub mergesamecells()
+    Dim x As Integer
+    Dim rg As Range
+    Set rg = Range("h1")    'initialize the range
+    For x = 1 To 13
+        If Range("h" & x + 1) = Range("h" & x) Then
+            Set rg = Union(rg, Range("h" & x + 1))
+        Else
+            Application.DisplayAlerts = False    'not display the alerts
+            rg.Merge
+            Set rg = Range("h" & x + 1)
+        End If
+    Next x
+    Application.DisplayAlerts = True    'set the displayalert to default mode
+End Sub
+
+
+
+*****************3*****************
+'see video and tutorial 15
+Sub celledition()
+    Dim x As Integer, m1 As Integer, m2 As Integer
+    Dim k As Integer
+    m1 = 2
+    For x = 2 To 1000
+        If Cells(x, 1) = "" Then Exit Sub
+        If Cells(x, 3) <> Cells(x + 1, 3) Then
+            m2 = x
+            Rows(x + 1).Insert
+            Cells(x + 1, "c") = Cells(x, "c") & "SUM"
+            Cells(x + 1, "h") = "=sum(h" & m1 & ":h" & m2 & ")"
+            Cells(x + 1, "h").Resize(1, 4).FillRight
+            Cells(x + 1, "i") = ""
+            x = x + 1
+            m1 = m2 + 2
+        End If
+    Next x
+End Sub
+
+
+
+*****************4*****************
+'see video and tutorial 19
+'this code is to set password and administrative rights to open the excelsheets
+Public WithEvents app As Excel.Application
+
+Private Sub app_WorkbookOpen(ByVal Wb As Workbook) 
+'function is WorkbookOpen and the argument is Wb
+Dim a
+ If Wb.Name = "open.xla" Then Exit Sub
+ a = Application.InputBox("please input the excelsheet key", "safety reminder")
+ If a <> 123 Then
+   Wb.Close False
+   MsgBox "sorry, you don't have right to open the excelsheets"
+ End If
+ 
+ End Sub
+
+
+Private Sub Workbook_Open()
+Set app = Excel.Application
+End Sub
+
+*****************5*****************
+'this code is to split the column based on the NA values
+'see video and tutorial 22
+Sub arrarylisting()
+    Dim arr, arr1(1 To 1000, 1 To 1) 'assign a large number to create an array
+    Dim x, a, k, m
+    arr = Range("a1:a16")
+    For x = 1 To UBound(arr) 'UBound and LBound 
+        If arr(x, 1) <> "" Then
+            k = k + 1
+            arr1(k, 1) = arr(x, 1) 
+        Else
+            m = m + 1
+            Range("e1").Offset(0, m).Resize(k) = arr1
+            Erase arr1 
+            k = 0
+        End If
+    Next x
+End Sub
+
+*****************6*****************
+'setting color according to the cell value
+'see video and tutorial 24
+
+Sub cellcolorsetting()
+    Dim x As Integer
+    For x = 2 To Range("a65535").End(xlUp).Row
+    'use end(xlUp).row to select the last row of the table
+        If (Range("d" & x) < 300) Then
+            Range(Cells(x, 1), Cells(x, 4)).Interior.ColorIndex = 5
+        End If
+    Next x
+End Sub
+
+
+Sub array_method()
+    Dim arr
+    Dim x As Integer, x1 As Integer
+    Dim sr As String, sr1 As String
+    arr = Range("d2:d" & Range("a65536").End(xlUp).Row)
+    For x = 1 To UBound(arr)
+        If x = UBound(arr) Then Range(Left(sr, Len(sr) - 1)).Interior.ColorIndex = 3
+        If arr(x, 1) > 500 Then
+            sr1 = sr
+            x1 = x + 1
+            Do
+                x = x + 1
+            Loop Until arr(x, 1) <= 500
+
+            sr = sr & "A" & x1 & ":D" & x & ","
+            If Len(sr) > 255 Then
+                sr = sr1
+                x = x1 - 1
+                Range(Left(sr, Len(sr) - 1)).Interior.ColorIndex = 3
+                sr = ""
+            End If
+            x = x - 1
+            End If
+        Next x
+    End Sub
+
+*****************7*****************
+'bubble sort algorithms
+Sub bubblesort()
+    Dim arr, temp, x, y, t, k
+    t = Timer
+    arr = Range("a1:a10")
+    For x = 1 To UBound(arr) - 1
+        For y = x + 1 To UBound(arr)
+            If arr(x, 1) > arr(y, 1) Then
+                temp = arr(x, 1)
+                arr(x, 1) = arr(y, 1)
+                arr(y, 1) = temp
+            End If
+        Next y
+    Next x
+    Range("b1").Resize(x) = arr
+End Sub
+
+*****************8*****************
+'selection sort algorithms
+Sub selectionsort()
+    Dim arr, temp, x, y, imax
+    arr = Range("a1:a10")
+    For x = UBound(arr) To 1 + 1 Step -1
+        imax = 1 'the max array index
+        For y = 1 To x
+            If arr(y, 1) > arr(imax, 1) Then imax = y
+        Next y
+        temp = arr(imax, 1)
+        arr(imax, 1) = arr(x, 1)
+        arr(x, 1) = temp
+    Next x
+    Range("b1").Resize(UBound(arr)) = arr
+End Sub
+
+*****************9*****************
+Sub multiplesheet_twoway_search()
+    Dim d As New Dictionary
+    Dim x, y
+    Dim arr
+    For x = 3 To 5
+        arr = Sheets(x).Range("a2").Resize(Sheets(x).Range("a65536").End(xlUp).Row - 1, 2)
+        For y = 1 To UBound(arr)
+            d(arr(y, 1)) = arr(y, 2)
+            d(arr(y, 2)) = arr(y, 1)
+        Next y
+    Next x
+    MsgBox d("C1")
+    MsgBox d("Mr. Wu Hui")
+End Sub
+
+
+*****************10*****************
+%%%%%%%%%%%%%%%%%
+%%%A%%%2%%%200%%%
+%%%A%%%3%%%100%%%
+%%%C%%%4%%%405%%%
+%%%B%%%2%%%600%%%
+%%%C%%%3%%%120%%%
+%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%
+%%%A%%%5%%%300%%%
+%%%C%%%7%%%525%%%
+%%%B%%%2%%%600%%%
+%%%%%%%%%%%%%%%%%
+
+sub Chess()
+Dim chess(1 To 10000, 1 To 3)
+    Dim rows
+    Dim arr, x, k
+    Dim d As New dictionary
+    arr = Range("a2:c" & Range("a65536").End(xlUp).Row)
+    For x = 1 To UBound(arr)
+        If d.exists(arr(x, 1)) Then
+            rows = d(arr(x, 1))
+            chess(rows, 2) = chess(rows, 2) + arr(x, 2)
+            chess(rows, 3) = chess(rows, 3) + arr(x, 2)
+        Else
+            k = k + 1
+            d(arr(x, 1)) = k
+            chess(k, 1) = arr(x, 1)
+            chess(k, 2) = arr(x, 2)
+            chess(k, 3) = arr(x, 3)
+        End If
+    Next x
+    Range("f2").Resize(k, 3) = chess
+end sub
+
+*****************11*****************
+'generate the even number using dictionary and self-defined function
+Function shuiji2(maxnum, geshu, Optional q0 As Integer = 2)
+    Dim d As New Dictionary
+    Dim num, m
+    Application.Volatile
+    m = 1
+    Do
+        num = Int(Rnd() * maxnum + 1)
+        If q0 = 2 Then
+            If num Mod 2 = 0 Then d(num) = ""
+        ElseIf q0 = 1 Then
+            If Not num Mod 2 = 0 Then d(num) = ""
+        Else
+            Exit Function
+            End If
+        Loop Until d.Count = geshu
+        shuiji2 = Application.Transpose(d.Keys)
+    End Function
+
