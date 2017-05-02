@@ -1,0 +1,14 @@
+Sub combinesheets()
+Dim i As Integer, wbk As Workbook
+Set wbk = Workbooks.Open(ThisWorkbook.Path & "\A.xls")
+With ThisWorkbook.Sheets("2nd")
+For i = 1 To wbk.Sheets.Count
+    If i = 1 Then
+       wbk.Sheets(i).UsedRange.Copy .Range("A1")
+    Else
+       wbk.Sheets(i).UsedRange.Offset(1, 0).Copy .Range("A" & .[A65536].End(xlUp).Row + 1)
+    End If
+Next i
+wbk.Close True
+End With
+End Sub
