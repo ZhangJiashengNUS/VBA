@@ -1,0 +1,10 @@
+'This is a case when I did data cleaning for a 8 worksheets with more than 3000 rows.
+For i = 4 To nrow
+    If IsEmpty(reference.Cells(i, 3)) Then
+    GoTo NextIteration
+    Else
+    j = j + 1
+    cc.Cells(j, 2) = "=IFERROR(Left(Australia!A" & i & ", Search(""-"", Australia!A" & i & ")-2), B" & (j - 1) & ")"
+    End If
+NextIteration:
+Next
